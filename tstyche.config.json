@@ -1,0 +1,5 @@
+{
+  "testFileMatch": [
+    "src/__tests__/**/*.tst.ts"
+  ]
+}
