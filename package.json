@@ -15,7 +15,8 @@
     "lint": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs",
     "lint:fix": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs --fix",
     "start": "tsc && node dist/index.js",
-    "docs": "typedoc index.ts"
+    "docs": "typedoc index.ts",
+    "release:dry": "semantic-release --dry-run"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,8 @@
   "devDependencies": {
     "@action-validator/cli": "^0.6.0",
     "@action-validator/core": "^0.6.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@stylistic/eslint-plugin": "^4.0.0",
     "@stylistic/eslint-plugin-ts": "^4.0.0",
     "@types/node": "^22.13.4",
@@ -47,6 +50,7 @@
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-vitest": "^0.5.4",
     "lint-staged": "^16.0.0",
+    "semantic-release": "^22.0.12",
     "tstyche": "^4.3.0",
     "typedoc": "^0.27.0",
     "typescript": "^5.7.3",
