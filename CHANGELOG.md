@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/QuentinJanuel/envoyage/compare/v1.0.0...v1.1.0) (2025-08-09)
+
+
+### Features
+
+* add getAll method to Resolver for retrieving all accessible variables ([2969c81](https://github.com/QuentinJanuel/envoyage/commit/2969c816cde496c53626e5fdce6571b8955649a3))
+
 # 1.0.0 (2025-08-09)
 
 Initial release of envoyage - a type-safe environment variable management library for TypeScript applications.
