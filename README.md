@@ -1,5 +1,11 @@
 # envoyage
 
+<!-- [![npm version](https://badge.fury.io/js/envoyage.svg)](https://badge.fury.io/js/envoyage)
+[![Test](https://github.com/QuentinJanuel/envoyage/actions/workflows/test.yml/badge.svg)](https://github.com/QuentinJanuel/envoyage/actions/workflows/test.yml)
+[![Release](https://github.com/QuentinJanuel/envoyage/actions/workflows/release.yml/badge.svg)](https://github.com/QuentinJanuel/envoyage/actions/workflows/release.yml) -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![semantic-release: conventionalcommits](https://img.shields.io/badge/semantic--release-conventionalcommits-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
+
 A type-safe environment variable management library for TypeScript applications. envoyage allows you to define environment configurations with multiple resolution strategies while maintaining full type safety across different deployment environments.
 
 **envoyage is completely agnostic about how your variables are loaded**, it solely provides a safe way to declare your environment structure based on your specific requirements.
