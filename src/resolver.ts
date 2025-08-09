@@ -96,7 +96,12 @@ export class Resolver<
    */
   public get<
     Name extends GetName<GetCommonVariableForEnv<EnvReg, EnvName, Var>>,
-    Async extends GetAsyncStatus<EnvReg, EnvName, Var, Name & GetName<GetVariableForEnv<EnvReg, EnvName, Var>>>,
+    Async extends GetAsyncStatus<
+      EnvReg,
+      EnvName,
+      Var,
+      Name & GetName<GetVariableForEnv<EnvReg, EnvName, Var>>
+    >,
   >(
     name: Name,
   ): AsyncValue<Async, string> {
@@ -141,6 +146,80 @@ export class Resolver<
       return Promise.resolve(finalVal) as AsyncValue<Async, string>
 
     return finalVal as AsyncValue<Async, string>
+  }
+
+  /**
+   * Gets the values of all accessible variables for the current environment.
+   *
+   * This method returns an object mapping variable names to their resolved values.
+   * If any variable resolves asynchronously, the whole result is a Promise that
+   * resolves to the final object. For resolvers created with multiple possible
+   * environments (via `createDynamicResolver`), only variables that are defined
+   * in every possible environment are included for type safety.
+   *
+   * The same validation rules as in {@link get} apply to each variable: a runtime
+   * error is thrown if a variable resolves to `undefined`, `null`, or a non-string
+   * value, or if a resolution method cannot be found.
+   *
+   * @returns An object of variable values, or a Promise of that object if async
+   *
+   * @example
+   * ```typescript
+   * const resolver = varReg.createResolver("env1", { env: { DATABASE_URL: "dev" } })
+   * const all = await resolver.getAll()
+   * // { DATABASE_URL: "dev", IS_WORKFLOW: "false", ... }
+   * ```
+   *
+   * @example
+   * ```typescript
+   * const res = varReg.createDynamicResolver({
+   *   env1: [{ env: { VAR4: "v1" } }],
+   *   env2: [{ secrets: { VAR4: "v2" } }],
+   * }, () => process.env.NODE_ENV === "production" ? "env2" : "env1")
+   *
+   * // Only variables defined in both env1 and env2 are included
+   * const all = await res.getAll()
+   * ```
+   */
+  public getAll(): AsyncValue<
+    GetAsyncStatus<
+      EnvReg,
+      EnvName,
+      Var,
+      GetName<
+        GetCommonVariableForEnv<EnvReg, EnvName, Var>
+        & GetVariableForEnv<EnvReg, EnvName, Var>
+      >
+    >,
+    {
+      [Name in GetName<GetCommonVariableForEnv<EnvReg, EnvName, Var>>]: string
+    }
+  > {
+    // Select only variables that are defined in every possible environment for this resolver
+    const commonVariables = this.variables.filter((variable) => this.possibleEnvNames.every(
+      (env) => variable.definitions.some((def) => def.envName === env),
+    ))
+
+    // Resolve each variable using the same logic as `get`, preserving async behavior
+    const entries = commonVariables.map((variable) => {
+      const name = variable.name as string
+      // Use the public `get` method to leverage its validation and async typing behavior
+      const value = this.get(name as never) as unknown as string | Promise<string>
+      return [name, value] as const
+    })
+
+    const hasAsync = entries.some(([, value]) => value instanceof Promise)
+    if (hasAsync) {
+      return Promise.all(
+        entries.map(async ([key, val]) => [key, await val] as const),
+      ).then((resolved) => Object.fromEntries(resolved)) as never
+    }
+
+    const result: Record<string, string> = {}
+    for (const [key, val] of entries)
+      result[key] = val as string
+
+    return result as never
   }
 
   /**
