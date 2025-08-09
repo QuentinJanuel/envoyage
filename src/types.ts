@@ -351,4 +351,4 @@ export type GetDefinedResolution<
  * type C = MergeAsync<"sync" | "async"> // "async"
  * ```
  */
-export type MergeAsync<Status extends AsyncStatus> = "async" extends Status ? "async" : "sync"
+export type MergeAsync<Status extends AsyncStatus> = "sync" extends Status ? "sync" : "async"
