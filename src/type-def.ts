@@ -3,6 +3,7 @@
  * Used to define and infer types in the type system.
  *
  * @template T - The type to wrap (defaults to any)
+ * @internal
  *
  * @example
  * ```typescript
@@ -18,6 +19,7 @@ export interface TypeDef<T = any> { __phantom?: T }
  *
  * @template T - The TypeDef to extract from
  * @returns The original type that was wrapped
+ * @internal
  *
  * @example
  * ```typescript

@@ -159,6 +159,7 @@ export class VariableRegistry<
    * @param envData - The environment data for the target environment
    * @param args - Dynamic data (optional, required only if variables use dynamic resolution)
    * @returns A Resolver instance for the specified environment
+   * @internal
    *
    * @example
    * ```typescript

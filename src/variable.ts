@@ -52,6 +52,7 @@ export class Variable<
    * @template N - The name of the variable (must be uppercase)
    * @param name - The name of the variable (must be uppercase)
    * @returns A new Variable with no environment definitions
+   * @internal
    *
    * @example
    * ```typescript

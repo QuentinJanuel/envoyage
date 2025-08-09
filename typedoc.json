@@ -1,0 +1,38 @@
+{
+  "entryPoints": [
+    "./index.ts"
+  ],
+  "out": "./docs/api",
+  "theme": "default",
+  "name": "envoyage",
+  "readme": "./README.md",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": false,
+  "includeVersion": true,
+  "sort": [
+    "source-order"
+  ],
+  "validation": {
+    "notExported": false,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "categorizeByGroup": false,
+  "defaultCategory": "Functions",
+  "categoryOrder": [
+    "Environment Registry",
+    "Variable Registry",
+    "Resolver",
+    "Types",
+    "Functions"
+  ],
+  "excludeNotDocumented": false,
+  "treatWarningsAsErrors": false,
+  "intentionallyNotExported": [],
+  "excludeReferences": false,
+  "exclude": [
+    "**/*test*",
+    "**/__tests__/**"
+  ]
+}

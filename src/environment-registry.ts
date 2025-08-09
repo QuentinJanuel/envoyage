@@ -80,6 +80,7 @@ export class EnvironmentRegistry<
    * Creates a new empty EnvironmentRegistry.
    *
    * @returns A new EnvironmentRegistry with no environments
+   * @internal
    *
    * @example
    * ```typescript

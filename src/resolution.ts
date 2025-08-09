@@ -129,6 +129,7 @@ export class Resolution<
    * @param tag - The unique tag for this resolution method
    * @param resolve - The resolve function for this resolution
    * @returns A new Resolution instance
+   * @internal
    *
    * @example
    * ```typescript

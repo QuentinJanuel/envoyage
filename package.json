@@ -14,8 +14,26 @@
     "test:tstyche": "tstyche",
     "lint": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs",
     "lint:fix": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs --fix",
-    "start": "tsc && node dist/index.js"
+    "start": "tsc && node dist/index.js",
+    "docs": "typedoc index.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/QuentinJanuel/envoyage.git"
+  },
+  "homepage": "https://github.com/QuentinJanuel/envoyage",
+  "bugs": {
+    "url": "https://github.com/QuentinJanuel/envoyage/issues"
+  },
+  "keywords": [
+    "environment",
+    "variables",
+    "typescript",
+    "type-safe",
+    "configuration",
+    "env",
+    "config"
+  ],
   "devDependencies": {
     "@action-validator/cli": "^0.6.0",
     "@action-validator/core": "^0.6.0",
@@ -30,6 +48,7 @@
     "eslint-plugin-vitest": "^0.5.4",
     "lint-staged": "^16.0.0",
     "tstyche": "^4.3.0",
+    "typedoc": "^0.27.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0",
     "vitest": "^3.2.4",
