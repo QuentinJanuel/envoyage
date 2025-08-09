@@ -1,5 +1,9 @@
 # envoyage
 
+<div align="center">
+  <img src="docs/logo.png" alt="envoyage logo" width="200">
+</div>
+
 <!-- [![npm version](https://badge.fury.io/js/envoyage.svg)](https://badge.fury.io/js/envoyage)
 [![Test](https://github.com/QuentinJanuel/envoyage/actions/workflows/test.yml/badge.svg)](https://github.com/QuentinJanuel/envoyage/actions/workflows/test.yml)
 [![Release](https://github.com/QuentinJanuel/envoyage/actions/workflows/release.yml/badge.svg)](https://github.com/QuentinJanuel/envoyage/actions/workflows/release.yml) -->
