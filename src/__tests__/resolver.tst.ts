@@ -383,4 +383,53 @@ describe("Resolver", () => {
       )
     })
   })
+
+  describe("getAll", () => {
+    it("should be able to get all variables", () => {
+      const res1 = varReg.createResolver("env1", { env: {} })
+      expect(res1.getAll()).type.toBe<Promise<{
+        VAR1: string
+        VAR3: string
+        VAR4: string
+        VAR6: string
+      }>>()
+
+      const res2 = varReg.createResolver(
+        "env2",
+        { secrets: {} },
+        { myDynamicVar: "myDynamicValue" },
+      )
+      expect(res2.getAll()).type.toBe<{
+        VAR2: string
+        VAR3: string
+        VAR4: string
+        VAR5: string
+      }>()
+
+      const res3 = varReg.createDynamicResolver({
+        env1: [{ env: {} }],
+        env2: [{ secrets: {} }, { myDynamicVar: "myDynamicValue" }],
+      }, () => "env1")
+      expect(res3.getAll()).type.toBe<{
+        VAR3: string
+        VAR4: string
+      }>()
+
+      const res4 = (0 as unknown as boolean) ? res1 : res2
+      expect(res4.getAll()).type.toBe<
+        | Promise<{
+          VAR1: string
+          VAR3: string
+          VAR4: string
+          VAR6: string
+        }>
+        | {
+          VAR2: string
+          VAR3: string
+          VAR4: string
+          VAR5: string
+        }
+      >()
+    })
+  })
 })

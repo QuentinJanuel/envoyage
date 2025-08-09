@@ -68,6 +68,19 @@ describe("Environment Registry Integration", () => {
     expect(env2Resolver.get("VAR5")).toBe("myDynamicVarValue")
 
     await expect(env1Resolver.get("VAR6")).resolves.toBe("async-value")
+
+    await expect(env1Resolver.getAll()).resolves.toEqual({
+      VAR1: "value1",
+      VAR3: "value3-for-env1",
+      VAR4: "value4-for-env1",
+      VAR6: "async-value",
+    })
+    expect(env2Resolver.getAll()).toEqual({
+      VAR2: "value2",
+      VAR3: "value3-for-env2",
+      VAR4: "value4-for-env2",
+      VAR5: "myDynamicVarValue",
+    })
   })
 
   describe("Dynamic Resolver", () => {
@@ -114,7 +127,7 @@ describe("Environment Registry Integration", () => {
         .for("env1", "hardcoded", "v7-sync")
         .for("env2", "async-res"))
 
-    it("should work for a single–env dynamic resolver (env1)", async () => {
+    it("should work for a single-env dynamic resolver (env1)", async () => {
       const res = myVarReg.createDynamicResolver({
         env1: [{ env: { VAR4: "value4-for-env1" } }],
       }, () => "env1")
@@ -124,9 +137,17 @@ describe("Environment Registry Integration", () => {
       expect(res.get("VAR4")).toBe("value4-for-env1")
       expect(() => res.get("VAR5" as "VAR1")).toThrow()
       await expect(res.get("VAR6")).resolves.toBe("async-value")
+
+      await expect(res.getAll()).resolves.toEqual({
+        VAR1: "value1",
+        VAR3: "value3-for-env1",
+        VAR4: "value4-for-env1",
+        VAR6: "async-value",
+        VAR7: "v7-sync",
+      })
     })
 
-    it("should work for a single–env dynamic resolver (env2 with dynamic data)", () => {
+    it("should work for a single-env dynamic resolver (env2 with dynamic data)", async () => {
       const res = myVarReg.createDynamicResolver({
         env2: [{ secrets: { VAR4: "value4-for-env2" } }, { myDynamicVar: "dyn" }],
       }, () => "env2")
@@ -137,24 +158,38 @@ describe("Environment Registry Integration", () => {
       expect(res.get("VAR5")).toBe("dyn")
       // VAR6 only exists in env1 → runtime error when missing definition
       expect(() => res.get("VAR6" as "VAR2")).toThrow()
+
+      await expect(res.getAll()).resolves.toEqual({
+        VAR2: "value2",
+        VAR3: "value3-for-env2",
+        VAR4: "value4-for-env2",
+        VAR5: "dyn",
+        VAR7: "async-value-env2",
+      })
     })
 
     it("should default to async if any env resolution is async (env1 | env2)", async () => {
-      const flag = true // toggle to choose which env at runtime
-      const res = myVarReg.createDynamicResolver({
-        env1: [{ env: { VAR4: "value4-for-env1" } }],
-        env2: [{ secrets: { VAR4: "value4-for-env2" } }, { myDynamicVar: "dyn" }],
-      }, () => (flag ? "env1" : "env2"))
+      for (const flag of [true, false]) {
+        const res = myVarReg.createDynamicResolver({
+          env1: [{ env: { VAR4: "value4-for-env1" } }],
+          env2: [{ secrets: { VAR4: "value4-for-env2" } }, { myDynamicVar: "dyn" }],
+        }, () => (flag ? "env1" : "env2"))
 
-      // VAR3 is sync in both envs
-      expect(res.get("VAR3")).toBe(flag ? "value3-for-env1" : "value3-for-env2")
+        // VAR3 is sync in both envs
+        expect(res.get("VAR3")).toBe(flag ? "value3-for-env1" : "value3-for-env2")
 
-      // VAR6 is async in env1 and may be undefined in env2; union means we always get a Promise
-      await expect(res.get("VAR6" as unknown as "VAR3"))
-        .resolves.toBe("async-value")
+        // VAR4 is sync for both envs
+        expect(res.get("VAR4")).toBe(flag ? "value4-for-env1" : "value4-for-env2")
 
-      // VAR7 is sync in env1 and async in env2 → type is Promise and awaiting works
-      await expect(res.get("VAR7")).resolves.toBe("v7-sync")
+        // VAR7 is sync in env1 and async in env2 → type is Promise and awaiting works
+        await expect(res.get("VAR7")).resolves.toBe(flag ? "v7-sync" : "async-value-env2")
+
+        await expect(res.getAll()).resolves.toEqual({
+          VAR3: flag ? "value3-for-env1" : "value3-for-env2",
+          VAR4: flag ? "value4-for-env1" : "value4-for-env2",
+          VAR7: flag ? "v7-sync" : "async-value-env2",
+        })
+      }
     })
   })
 })
