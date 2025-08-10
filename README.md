@@ -10,7 +10,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![semantic-release: conventionalcommits](https://img.shields.io/badge/semantic--release-conventionalcommits-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 
-A type-safe environment variable management library for TypeScript applications. envoyage allows you to define environment configurations with multiple resolution strategies while maintaining full type safety across different deployment environments.
+A zero-dependency, type-safe environment variable management library for TypeScript applications. envoyage allows you to define environment configurations with multiple resolution strategies while maintaining full type safety across different deployment environments.
 
 **envoyage is completely agnostic about how your variables are loaded**, it solely provides a safe way to declare your environment structure based on your specific requirements.
 
@@ -23,6 +23,7 @@ A type-safe environment variable management library for TypeScript applications.
 - **Environment Registry**: Centralized management of multiple environments (local, staging, production, etc.)
 - **Variable Registry**: Define variables once and configure how they resolve across different environments
 - **Merge Support**: Combine multiple variable registries for modular configuration
+- **Secure Data Handling**: Built-in protection against accidental logging of sensitive values through redacted data patterns
 
 ## Installation
 
