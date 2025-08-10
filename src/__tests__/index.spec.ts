@@ -83,6 +83,146 @@ describe("Environment Registry Integration", () => {
     })
   })
 
+  describe("getAllFor", () => {
+    it("should return values from the current env for variables using the tag in the target env (sync)", () => {
+      const myEnvReg = createEnvironmentRegistry()
+        .addEnv(
+          "env1",
+          defineType<{
+            env: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-env", defineType<undefined>(), (data) =>
+              data.envData.env[data.variableName])
+            .addResolution("async-res", defineType<undefined>(), async () => {
+              await new Promise((resolve) => setTimeout(resolve, 10))
+              return "async-value"
+            }),
+        )
+        .addEnv(
+          "env2",
+          defineType<{
+            secrets: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-secrets", defineType<undefined>(), (data) =>
+              data.envData.secrets[data.variableName]),
+        )
+
+      const myVarReg = myEnvReg.createVariableRegistry()
+        .addVar("VAR1", (v) => v.for("env1", "hardcoded", "value1"))
+        .addVar("VAR2", (v) => v.for("env2", "hardcoded", "value2"))
+        .addVar("VAR3", (v) => v
+          .for("env1", "hardcoded", "value3-for-env1")
+          .for("env2", "hardcoded", "value3-for-env2"))
+        .addVar("VAR4", (v) => v
+          .for("env1", "from-env")
+          .for("env2", "from-secrets"))
+        .addVar("VAR5", (v) => v.dynamicFor("env2", "myDynamicVar"))
+        .addVar("VAR6", (v) => v.for("env1", "async-res"))
+
+      const env1Resolver = myVarReg.createResolver(
+        "env1",
+        { env: { VAR4: "value4-for-env1" } },
+      )
+
+      expect(env1Resolver.getAllFor("env2", "from-secrets")).toEqual({
+        VAR4: "value4-for-env1",
+      })
+    })
+
+    it("should return Promise when any included variable resolves async in the current env", async () => {
+      const myEnvReg = createEnvironmentRegistry()
+        .addEnv(
+          "env1",
+          defineType<{
+            env: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-env", defineType<undefined>(), (data) =>
+              data.envData.env[data.variableName])
+            .addResolution("async-res", defineType<undefined>(), async () => {
+              await new Promise((resolve) => setTimeout(resolve, 10))
+              return "async-value"
+            }),
+        )
+        .addEnv(
+          "env2",
+          defineType<{
+            secrets: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-secrets", defineType<undefined>(), (data) =>
+              data.envData.secrets[data.variableName]),
+        )
+
+      const myVarReg = myEnvReg.createVariableRegistry()
+        .addVar("VAR3", (v) => v
+          .for("env1", "hardcoded", "value3-for-env1")
+          .for("env2", "hardcoded", "value3-for-env2"))
+        // Async in current env (env1) but qualifies for target tag in env2
+        .addVar("VAR7", (v) => v
+          .for("env1", "async-res")
+          .for("env2", "hardcoded", "value7-for-env2"))
+
+      const env1Resolver = myVarReg.createResolver(
+        "env1",
+        { env: {} },
+      )
+
+      await expect(env1Resolver.getAllFor("env2", "hardcoded")).resolves.toEqual({
+        VAR3: "value3-for-env1",
+        VAR7: "async-value",
+      })
+    })
+
+    it("should exclude variables that are dynamic in the target env", () => {
+      const myEnvReg = createEnvironmentRegistry()
+        .addEnv(
+          "env1",
+          defineType<{
+            env: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-env", defineType<undefined>(), (data) =>
+              data.envData.env[data.variableName]),
+        )
+        .addEnv(
+          "env2",
+          defineType<{
+            secrets: Record<string, string>
+          }>(),
+          (env) => env
+            .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+            .addResolution("from-secrets", defineType<undefined>(), (data) =>
+              data.envData.secrets[data.variableName]),
+        )
+
+      const myVarReg = myEnvReg.createVariableRegistry()
+        .addVar("VAR3", (v) => v
+          .for("env1", "hardcoded", "value3-for-env1")
+          .for("env2", "hardcoded", "value3-for-env2"))
+        // Dynamic in target env2 → must be excluded from getAllFor("env2", "hardcoded")
+        .addVar("VAR8", (v) => v
+          .for("env1", "hardcoded", "value8-for-env1")
+          .dynamicFor("env2", "dynVar"))
+
+      const env1Resolver = myVarReg.createResolver(
+        "env1",
+        { env: {} },
+      )
+
+      expect(env1Resolver.getAllFor("env2", "hardcoded")).toEqual({
+        VAR3: "value3-for-env1",
+      })
+    })
+  })
+
   describe("Dynamic Resolver", () => {
     const myEnvReg = createEnvironmentRegistry()
       .addEnv(

@@ -1,8 +1,8 @@
-import type { EnvironmentRegistry } from "./environment-registry.js"
-import type { Resolution, Resolve, DefinedResolution } from "./resolution.js"
-import type { Variable } from "./variable.js"
-import type { AsyncStatus } from "./async.js"
-import type { Infer } from "./type-def.js"
+import type * as er from "./environment-registry.js"
+import type * as res from "./resolution.js"
+import type * as v from "./variable.js"
+import type * as a from "./async.js"
+import type * as td from "./type-def.js"
 
 /**
  * Extracts the name of an environment from an EnvironmentRegistry.
@@ -16,7 +16,7 @@ import type { Infer } from "./type-def.js"
  * ```
  */
 export type GetEnvName<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
 > = EnvReg["environments"][number]["name"]
 
 /**
@@ -32,7 +32,7 @@ export type GetEnvName<
  * ```
  */
 export type GetEnv<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
 > = EnvReg["environments"][number] & { name: EnvName }
 
@@ -49,7 +49,7 @@ export type GetEnv<
  * ```
  */
 export type GetTag<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
 > = GetEnv<EnvReg, EnvName>["resolutions"][number]["tag"]
 
@@ -67,9 +67,9 @@ export type GetTag<
  * ```
  */
 export type GetEnvData<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-> = Infer<GetEnv<EnvReg, EnvName>["resolutions"][number]["envDataType"]>
+> = td.Infer<GetEnv<EnvReg, EnvName>["resolutions"][number]["envDataType"]>
 
 /**
  * Extracts a specific resolution from an environment by its tag.
@@ -85,12 +85,12 @@ export type GetEnvData<
  * ```
  */
 export type GetResolution<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
   Tag extends GetTag<EnvReg, EnvName>,
 > = Extract<
   GetEnv<EnvReg, EnvName>["resolutions"][number],
-  Resolution<Tag>
+  res.Resolution<Tag>
 >
 
 /**
@@ -107,10 +107,10 @@ export type GetResolution<
  * ```
  */
 export type GetPayload<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
   Tag extends GetTag<EnvReg, EnvName> = GetTag<EnvReg, EnvName>,
-> = Infer<GetResolution<EnvReg, EnvName, Tag>["payloadType"]>
+> = td.Infer<GetResolution<EnvReg, EnvName, Tag>["payloadType"]>
 
 /**
  * Extracts the async status (sync/async) from a resolve function.
@@ -125,9 +125,9 @@ export type GetPayload<
  */
 export type GetResolveSyncStatus<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  R extends Resolve<any, any, AsyncStatus>,
+  R extends res.Resolve<any, any, a.AsyncStatus>,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-> = R extends Resolve<any, any, infer Async> ? Async : never
+> = R extends res.Resolve<any, any, infer Async> ? Async : never
 
 /**
  * Extracts the variable name from a Variable type.
@@ -140,7 +140,7 @@ export type GetResolveSyncStatus<
  * type VarName = GetName<Variable<...>> // "DATABASE_URL"
  * ```
  */
-export type GetName<V> = V extends Variable<infer _S, infer N>
+export type GetName<V> = V extends v.Variable<infer _S, infer N>
   ? N
   : never
 
@@ -158,13 +158,30 @@ export type GetName<V> = V extends Variable<infer _S, infer N>
  * ```
  */
 export type GetVariableForEnv<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
-> = Var extends Variable<EnvReg, infer N, infer DR>
+  Var extends v.Variable<EnvReg>,
+> = Var extends v.Variable<EnvReg, infer N, infer DR>
   ? DR extends { envName: EnvName }
-    ? Variable<EnvReg, N, DR>
+    ? v.Variable<EnvReg, N, DR>
     : never
+  : never
+
+/**
+ * Gets all environments where a variable is defined.
+ *
+ * @template Var - The variable type
+ * @returns Union of environment names where the variable is defined
+ *
+ * @example
+ * ```typescript
+ * type Envs = GetVariableEnvs<Variable<...>> // "local" | "production"
+ * ```
+ */
+export type GetVariableEnvs<
+  Var extends v.Variable<er.EnvironmentRegistry>,
+> = Var extends { definitions: Array<infer DR> }
+  ? DR extends { envName: infer E } ? E : never
   : never
 
 /**
@@ -173,9 +190,6 @@ export type GetVariableForEnv<
  * • If `EnvName` is a single environment, it behaves like `GetVariableForEnv`.
  * • If `EnvName` is a union (e.g. "env1" | "env2"), it returns only the variables that are defined in **all** of
  *   those environments (i.e. the intersection / common variables).
- *
- * Internally it checks that the set of requested environment names is a subset of the environments where the
- * variable is defined.
  *
  * @template EnvReg - The environment registry type
  * @template EnvName - The environment name or union of names to filter by
@@ -193,21 +207,41 @@ export type GetVariableForEnv<
  * ```
  */
 export type GetCommonVariableForEnv<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
-> = Var extends Variable<EnvReg>
-  ? [EnvName] extends [
-    Var extends { definitions: Array<infer DR> }
-      ? DR extends { envName: infer E } ? E : never
-      : never,
-  ]
+  Var extends v.Variable<EnvReg>,
+> = Var extends v.Variable<EnvReg>
+  ? [EnvName] extends [GetVariableEnvs<Var>]
     ? Var
     : never
   : never
 
 /**
+ * Extracts the resolution type for a variable in a specific environment.
+ * This is the base type that determines how a variable is resolved (static, dynamic, or user-defined).
+ * For user-defined resolutions, use {@link GetResolutionTag} to get the specific tag.
+ *
+ * @template EnvReg - The environment registry type
+ * @template EnvName - The environment name
+ * @template Var - The variable type
+ * @returns The resolution type for the variable in the environment
+ *
+ * @example
+ * ```typescript
+ * type ResType = GetResolutionType<typeof envReg, "local", Variable<...>>
+ * // { type: "user-defined", tag: "from-env" } | { type: "dynamic", dynamicName: "bucket" }
+ * ```
+ */
+export type GetResolutionType<
+  EnvReg extends er.EnvironmentRegistry,
+  EnvName extends GetEnvName<EnvReg>,
+  Var extends v.Variable<EnvReg>,
+> = GetDefinedResolution<EnvReg, EnvName, Var>["type"]
+
+/**
  * Extracts the resolution tag for a specific variable in a specific environment.
+ * This type only works for user-defined resolutions (where type is "user-defined").
+ * For dynamic or static resolutions, this will return never.
  *
  * @template EnvReg - The environment registry type
  * @template EnvName - The environment name
@@ -217,23 +251,52 @@ export type GetCommonVariableForEnv<
  *
  * @example
  * ```typescript
+ * // For a user-defined resolution:
  * type Tag = GetResolutionTag<typeof envReg, "local", Variable<...>, "DATABASE_URL">
  * // "from-env"
+ *
+ * // For a dynamic resolution:
+ * type Tag = GetResolutionTag<typeof envReg, "local", Variable<...>, "BUCKET_NAME">
+ * // never
  * ```
+ *
+ * @see GetResolutionType - Get the base resolution type first to determine if it's user-defined
  */
 export type GetResolutionTag<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
+  Var extends v.Variable<EnvReg>,
   Name extends GetName<GetVariableForEnv<EnvReg, EnvName, Var>>,
 > = Extract<
-  GetDefinedResolution<
-    EnvReg,
-    EnvName,
-    GetVariableForEnv<EnvReg, EnvName, Var> & Variable<EnvReg, Name>
-  >["type"],
+  Extract<
+    Extract<
+      GetVariableForEnv<EnvReg, EnvName, Var>,
+      v.Variable<EnvReg, Name>
+    >["definitions"][number]["type"],
+    { type: "user-defined" }
+  >,
   { type: "user-defined" }
 >["tag"]
+
+/**
+ * Gets the resolve function for a variable in a specific environment.
+ *
+ * @template EnvReg - The environment registry type
+ * @template EnvName - The environment name
+ * @template Var - The variable type
+ * @template Name - The variable name
+ * @returns The resolve function type
+ */
+export type GetResolveFunction<
+  EnvReg extends er.EnvironmentRegistry,
+  EnvName extends GetEnvName<EnvReg>,
+  Var extends v.Variable<EnvReg>,
+  Name extends GetName<GetVariableForEnv<EnvReg, EnvName, Var>>,
+> = GetResolution<
+  EnvReg,
+  EnvName,
+  GetResolutionTag<EnvReg, EnvName, Var, Name>
+>["resolve"]
 
 /**
  * Determines if a variable resolution is async or sync for a specific environment.
@@ -251,22 +314,13 @@ export type GetResolutionTag<
  * ```
  */
 export type GetAsyncStatus<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
+  Var extends v.Variable<EnvReg>,
   Name extends GetName<GetVariableForEnv<EnvReg, EnvName, Var>>,
 > = MergeAsync<
   GetResolveSyncStatus<
-    GetResolution<
-      EnvReg,
-      EnvName,
-      GetResolutionTag<
-        EnvReg,
-        EnvName,
-        Var,
-        Name
-      >
-    >["resolve"]
+    GetResolveFunction<EnvReg, EnvName, Var, Name>
   >
 >
 
@@ -285,9 +339,9 @@ export type GetAsyncStatus<
  * ```
  */
 export type GetDynamicVariablePayload<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
+  Var extends v.Variable<EnvReg>,
 > = Extract<
   GetVariableForEnv<EnvReg, EnvName, Var>["definitions"][number]["type"],
   { type: "dynamic" }
@@ -309,12 +363,22 @@ export type GetDynamicVariablePayload<
  * ```
  */
 export type GetDynamicData<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg>,
+  Var extends v.Variable<EnvReg>,
 > = GetDynamicVariablePayload<EnvReg, EnvName, Var> extends never ? undefined : {
   [key in GetDynamicVariablePayload<EnvReg, EnvName, Var>]: string
 }
+
+/**
+ * Gets the variable definition for a specific environment.
+ *
+ * @template Var - The variable type
+ * @returns The variable definition type
+ */
+export type GetVariableDefinition<
+  Var extends v.Variable<er.EnvironmentRegistry>,
+> = Var["definitions"][number]
 
 /**
  * Extracts the defined resolution for a variable in a specific environment.
@@ -330,10 +394,10 @@ export type GetDynamicData<
  * ```
  */
 export type GetDefinedResolution<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   EnvName extends GetEnvName<EnvReg> = GetEnvName<EnvReg>,
-  Var extends Variable<EnvReg> = Variable<EnvReg>,
-> = Var["definitions"][number] & DefinedResolution<EnvReg, EnvName>
+  Var extends v.Variable<EnvReg> = v.Variable<EnvReg>,
+> = GetVariableDefinition<Var> & res.DefinedResolution<EnvReg, EnvName>
 
 /**
  * Collapses a union of {@link AsyncStatus | AsyncStatus values} into a single status.
@@ -351,4 +415,4 @@ export type GetDefinedResolution<
  * type C = MergeAsync<"sync" | "async"> // "async"
  * ```
  */
-export type MergeAsync<Status extends AsyncStatus> = "async" extends Status ? "async" : "sync"
+export type MergeAsync<Status extends a.AsyncStatus> = "async" extends Status ? "async" : "sync"

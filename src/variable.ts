@@ -1,7 +1,7 @@
-import type { DefinedResolution } from "./resolution.js"
-import type { EnvironmentRegistry } from "./environment-registry.js"
-import type { GetEnvName, GetTag, GetPayload } from "./types.js"
-import type { Extends, OptionalIf, RemoveLiteral } from "./utils.js"
+import type * as res from "./resolution.js"
+import type * as er from "./environment-registry.js"
+import type * as t from "./types.js"
+import type * as u from "./utils.js"
 
 /**
  * Represents a single environment variable with definitions for different environments.
@@ -29,9 +29,9 @@ import type { Extends, OptionalIf, RemoveLiteral } from "./utils.js"
  * ```
  */
 export class Variable<
-  EnvReg extends EnvironmentRegistry,
+  EnvReg extends er.EnvironmentRegistry,
   N extends Uppercase<string> = Uppercase<string>,
-  DR extends DefinedResolution<EnvReg> = DefinedResolution<EnvReg>,
+  DR extends res.DefinedResolution<EnvReg> = res.DefinedResolution<EnvReg>,
 > {
   /**
    * Creates a new Variable instance.
@@ -60,7 +60,7 @@ export class Variable<
    * ```
    */
   public static create = <
-    EnvReg extends EnvironmentRegistry,
+    EnvReg extends er.EnvironmentRegistry,
     N extends Uppercase<string>,
   >(name: N) => new Variable<EnvReg, N, never>(name, [])
 
@@ -89,19 +89,19 @@ export class Variable<
    * ```
    */
   public for<
-    EnvName extends RemoveLiteral<GetEnvName<EnvReg>, DR["envName"]>,
-    Tag extends GetTag<EnvReg, EnvName>,
-    Payload extends GetPayload<EnvReg, EnvName, Tag>,
+    EnvName extends u.RemoveLiteral<t.GetEnvName<EnvReg>, DR["envName"]>,
+    Tag extends t.GetTag<EnvReg, EnvName>,
+    Payload extends t.GetPayload<EnvReg, EnvName, Tag>,
   >(
     envName: EnvName,
     tag: Tag,
-    ...args: OptionalIf<Payload, Extends<undefined, Payload>>
+    ...args: u.OptionalIf<Payload, u.Extends<undefined, Payload>>
   ) {
     const payload = args[0] as Payload
     return new Variable<
       EnvReg,
       N,
-      DR | DefinedResolution<
+      DR | res.DefinedResolution<
         EnvReg,
         EnvName,
         { type: "user-defined"; tag: Tag; payload: Payload }
@@ -141,7 +141,7 @@ export class Variable<
    * ```
    */
   public dynamicFor<
-    EnvName extends RemoveLiteral<GetEnvName<EnvReg>, DR["envName"]>,
+    EnvName extends u.RemoveLiteral<t.GetEnvName<EnvReg>, DR["envName"]>,
     DynamicName extends string,
   >(
     envName: EnvName,
@@ -150,7 +150,7 @@ export class Variable<
     return new Variable<
       EnvReg,
       N,
-      DR | DefinedResolution<
+      DR | res.DefinedResolution<
         EnvReg,
         EnvName,
         { type: "dynamic"; dynamicName: DynamicName }

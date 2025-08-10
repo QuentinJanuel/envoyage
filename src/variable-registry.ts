@@ -1,9 +1,9 @@
-import type { EnvironmentRegistry } from "./environment-registry.js"
-import type { GetEnvName, GetEnvData, GetDynamicData } from "./types.js"
-import { Resolver } from "./resolver.js"
-import type { DefinedResolution } from "./resolution.js"
-import { Variable } from "./variable.js"
-import type { Extends, HasIntersection, KeepIf, Not, OptionalIf, RemoveLiteral } from "./utils.js"
+import type * as er from "./environment-registry.js"
+import type * as t from "./types.js"
+import * as r from "./resolver.js"
+import type * as res from "./resolution.js"
+import * as v from "./variable.js"
+import type * as u from "./utils.js"
 
 /**
  * Registry for managing variable definitions across multiple environments.
@@ -29,8 +29,8 @@ import type { Extends, HasIntersection, KeepIf, Not, OptionalIf, RemoveLiteral }
  * ```
  */
 export class VariableRegistry<
-  EnvReg extends EnvironmentRegistry,
-  Var extends Variable<EnvReg> = Variable<EnvReg>,
+  EnvReg extends er.EnvironmentRegistry,
+  Var extends v.Variable<EnvReg> = v.Variable<EnvReg>,
 > {
   /**
    * Creates a new VariableRegistry instance.
@@ -57,7 +57,7 @@ export class VariableRegistry<
    * ```
    */
   public static create<
-    EnvReg extends EnvironmentRegistry,
+    EnvReg extends er.EnvironmentRegistry,
   >(environmentRegistry: EnvReg) {
     return new VariableRegistry<EnvReg, never>(
       environmentRegistry,
@@ -92,17 +92,17 @@ export class VariableRegistry<
    */
   public addVar<
     Name extends Uppercase<string>,
-    DR extends DefinedResolution<EnvReg>,
+    DR extends res.DefinedResolution<EnvReg>,
   >(
-    name: RemoveLiteral<Name, Var["name"]>,
-    f: (b: Variable<EnvReg, Name, never>) => Variable<EnvReg, Name, DR>,
+    name: u.RemoveLiteral<Name, Var["name"]>,
+    f: (b: v.Variable<EnvReg, Name, never>) => v.Variable<EnvReg, Name, DR>,
   ) {
     return new VariableRegistry<
       EnvReg,
-      Var | Variable<EnvReg, Name, DR>
+      Var | v.Variable<EnvReg, Name, DR>
     >(this.environmentRegistry, [
       ...this.variables,
-      f(Variable.create(name)),
+      f(v.Variable.create(name)),
     ])
   }
 
@@ -133,11 +133,11 @@ export class VariableRegistry<
    */
   public mergeWith<
     Name extends Uppercase<string>,
-    Var2 extends Variable<EnvReg, Name>,
+    Var2 extends v.Variable<EnvReg, Name>,
   >(
-    otherEnvReg: KeepIf<
+    otherEnvReg: u.KeepIf<
       VariableRegistry<EnvReg, Var2>,
-      Not<HasIntersection<Var, Var2>>
+      u.Not<u.HasIntersection<Var, Var2>>
     >,
   ) {
     return new VariableRegistry<EnvReg, Var | Var2>(this.environmentRegistry, [
@@ -176,21 +176,21 @@ export class VariableRegistry<
    * ```
    */
   public createResolver<
-    EnvName extends GetEnvName<EnvReg>,
-    DynamicData extends GetDynamicData<EnvReg, EnvName, Var>,
+    EnvName extends t.GetEnvName<EnvReg>,
+    DynamicData extends t.GetDynamicData<EnvReg, EnvName, Var>,
   >(
     envName: EnvName,
-    envData: GetEnvData<EnvReg, EnvName>,
-    ...args: OptionalIf<
-      KeepIf<
+    envData: t.GetEnvData<EnvReg, EnvName>,
+    ...args: u.OptionalIf<
+      u.KeepIf<
         DynamicData,
-        Extends<GetDynamicData<EnvReg, EnvName, Var>, DynamicData>
+        u.Extends<t.GetDynamicData<EnvReg, EnvName, Var>, DynamicData>
       >,
-      Extends<undefined, DynamicData>
+      u.Extends<undefined, DynamicData>
     >
   ) {
     const dynamicData = args[0] ?? {} as DynamicData
-    return new Resolver<
+    return new r.Resolver<
       EnvReg,
       EnvName,
       Var
@@ -245,11 +245,11 @@ export class VariableRegistry<
    */
   public createDynamicResolver<
     Defs extends {
-      [EnvName in GetEnvName<EnvReg>]?: [
-        GetEnvData<EnvReg, EnvName>,
-        ...args: OptionalIf<
-          GetDynamicData<EnvReg, EnvName, Var>,
-          Extends<undefined, GetDynamicData<EnvReg, EnvName, Var>>
+      [EnvName in t.GetEnvName<EnvReg>]?: [
+        t.GetEnvData<EnvReg, EnvName>,
+        ...args: u.OptionalIf<
+          t.GetDynamicData<EnvReg, EnvName, Var>,
+          u.Extends<undefined, t.GetDynamicData<EnvReg, EnvName, Var>>
         >,
       ]
     },
@@ -257,12 +257,12 @@ export class VariableRegistry<
     definitions: Defs,
     fn: () => keyof Defs,
   ) {
-    type EnvName = (keyof Defs) & GetEnvName<EnvReg>
+    type EnvName = (keyof Defs) & t.GetEnvName<EnvReg>
     const envName = fn() as EnvName
     const definition = definitions[envName]!
     const envData = definition[0]
-    const dynamicData = definition[1] ?? {} as GetDynamicData<EnvReg, EnvName, Var>
-    return new Resolver<
+    const dynamicData = definition[1] ?? {} as t.GetDynamicData<EnvReg, EnvName, Var>
+    return new r.Resolver<
       EnvReg,
       EnvName,
       Var
@@ -272,7 +272,7 @@ export class VariableRegistry<
       envName,
       envData,
       dynamicData,
-      Object.keys(definitions) as GetEnvName<EnvReg>[],
+      Object.keys(definitions) as t.GetEnvName<EnvReg>[],
     )
   }
 }

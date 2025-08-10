@@ -1,7 +1,7 @@
-import type { AsyncStatus, AsyncValue } from "./async.js"
-import type { EnvironmentRegistry } from "./environment-registry.js"
-import type { GetEnvName, GetTag, GetPayload } from "./types.js"
-import { defineType } from "./type-def.js"
+import type * as a from "./async.js"
+import type * as er from "./environment-registry.js"
+import type * as t from "./types.js"
+import * as td from "./type-def.js"
 
 /**
  * Data structure passed to resolve functions.
@@ -67,8 +67,8 @@ export interface ResolveData<
 export type Resolve<
   EnvData,
   Payload,
-  Async extends AsyncStatus,
-> = (data: ResolveData<EnvData, Payload>) => AsyncValue<Async, string>
+  Async extends a.AsyncStatus,
+> = (data: ResolveData<EnvData, Payload>) => a.AsyncValue<Async, string>
 
 /**
  * Represents a resolution method for an environment.
@@ -95,17 +95,17 @@ export class Resolution<
   EnvData = any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Payload = any,
-  Async extends AsyncStatus = AsyncStatus,
+  Async extends a.AsyncStatus = a.AsyncStatus,
 > {
   /**
    * Type definition for the environment data structure.
    */
-  public envDataType = defineType<EnvData>()
+  public envDataType = td.defineType<EnvData>()
 
   /**
    * Type definition for the payload structure.
    */
-  public payloadType = defineType<Payload>()
+  public payloadType = td.defineType<Payload>()
 
   /**
    * Creates a new Resolution instance.
@@ -151,7 +151,7 @@ export class Resolution<
     Tag extends string,
     EnvData,
     Payload,
-    Async extends AsyncStatus = AsyncStatus,
+    Async extends a.AsyncStatus = a.AsyncStatus,
   >(
     tag: Tag,
     resolve: Resolve<EnvData, Payload, Async>,
@@ -171,8 +171,8 @@ export class Resolution<
  * @internal
  */
 type DefinedResolutionType<
-  EnvReg extends EnvironmentRegistry,
-  EnvName extends GetEnvName<EnvReg> = GetEnvName<EnvReg>,
+  EnvReg extends er.EnvironmentRegistry,
+  EnvName extends t.GetEnvName<EnvReg> = t.GetEnvName<EnvReg>,
 > =
   | {
     type: "dynamic"
@@ -180,8 +180,8 @@ type DefinedResolutionType<
   }
   | {
     type: "user-defined"
-    tag: GetTag<EnvReg, EnvName>
-    payload: GetPayload<EnvReg, EnvName>
+    tag: t.GetTag<EnvReg, EnvName>
+    payload: t.GetPayload<EnvReg, EnvName>
   }
 
 /**
@@ -219,8 +219,8 @@ type DefinedResolutionType<
  * ```
  */
 export type DefinedResolution<
-  EnvReg extends EnvironmentRegistry,
-  EnvName extends GetEnvName<EnvReg> = GetEnvName<EnvReg>,
+  EnvReg extends er.EnvironmentRegistry,
+  EnvName extends t.GetEnvName<EnvReg> = t.GetEnvName<EnvReg>,
   Type extends DefinedResolutionType<EnvReg, EnvName> = DefinedResolutionType<EnvReg, EnvName>,
 > = {
   envName: EnvName

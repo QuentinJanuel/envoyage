@@ -149,7 +149,16 @@ const resolver = varReg.createResolver("production", {
   secrets: { API_KEY: "secret-value" }
 })
 
+// Get a single variable value
 const apiKey = resolver.get("API_KEY") // Type-safe access
+
+// Get all accessible variables
+const allValues = await resolver.getAll()
+// { API_KEY: "secret-value", APP_NAME: "MyApp", ... }
+
+// Get variables that use a specific resolution in another environment
+const hardcodedInLocal = resolver.getAllFor("local", "hardcoded")
+// Gets values from production for variables that use "hardcoded" in local
 ```
 
 ## Additional Features
