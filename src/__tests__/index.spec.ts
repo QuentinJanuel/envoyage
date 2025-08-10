@@ -46,6 +46,12 @@ describe("Environment Registry Integration", () => {
       .addVar("VAR6", (v) => v
         .for("env1", "async-res"))
 
+    expect(myVarReg.listVariables("env1", "hardcoded")).toEqual(["VAR1", "VAR3"])
+    expect(myVarReg.listVariables("env1", "from-env")).toEqual(["VAR4"])
+    expect(myVarReg.listVariables("env1", "async-res")).toEqual(["VAR6"])
+    expect(myVarReg.listVariables("env2", "from-secrets")).toEqual(["VAR4"])
+    expect(myVarReg.listVariables("env2", "hardcoded")).toEqual(["VAR2", "VAR3"])
+
     const env1Resolver = myVarReg.createResolver(
       "env1",
       { env: { VAR4: "value4-for-env1" } },
@@ -123,6 +129,12 @@ describe("Environment Registry Integration", () => {
         .addVar("VAR5", (v) => v.dynamicFor("env2", "myDynamicVar"))
         .addVar("VAR6", (v) => v.for("env1", "async-res"))
 
+      expect(myVarReg.listVariables("env1", "hardcoded")).toEqual(["VAR1", "VAR3"])
+      expect(myVarReg.listVariables("env1", "from-env")).toEqual(["VAR4"])
+      expect(myVarReg.listVariables("env1", "async-res")).toEqual(["VAR6"])
+      expect(myVarReg.listVariables("env2", "from-secrets")).toEqual(["VAR4"])
+      expect(myVarReg.listVariables("env2", "hardcoded")).toEqual(["VAR2", "VAR3"])
+
       const env1Resolver = myVarReg.createResolver(
         "env1",
         { env: { VAR4: "value4-for-env1" } },
@@ -169,6 +181,12 @@ describe("Environment Registry Integration", () => {
           .for("env1", "async-res")
           .for("env2", "hardcoded", "value7-for-env2"))
 
+      expect(myVarReg.listVariables("env1", "hardcoded")).toEqual(["VAR3"])
+      expect(myVarReg.listVariables("env1", "from-env")).toEqual([])
+      expect(myVarReg.listVariables("env1", "async-res")).toEqual(["VAR7"])
+      expect(myVarReg.listVariables("env2", "from-secrets")).toEqual([])
+      expect(myVarReg.listVariables("env2", "hardcoded")).toEqual(["VAR3", "VAR7"])
+
       const env1Resolver = myVarReg.createResolver(
         "env1",
         { env: {} },
@@ -211,6 +229,11 @@ describe("Environment Registry Integration", () => {
         .addVar("VAR8", (v) => v
           .for("env1", "hardcoded", "value8-for-env1")
           .dynamicFor("env2", "dynVar"))
+
+      expect(myVarReg.listVariables("env1", "hardcoded")).toEqual(["VAR3", "VAR8"])
+      expect(myVarReg.listVariables("env1", "from-env")).toEqual([])
+      expect(myVarReg.listVariables("env2", "from-secrets")).toEqual([])
+      expect(myVarReg.listVariables("env2", "hardcoded")).toEqual(["VAR3"])
 
       const env1Resolver = myVarReg.createResolver(
         "env1",
@@ -266,6 +289,13 @@ describe("Environment Registry Integration", () => {
       .addVar("VAR7", (v) => v
         .for("env1", "hardcoded", "v7-sync")
         .for("env2", "async-res"))
+
+    expect(myVarReg.listVariables("env1", "hardcoded")).toEqual(["VAR1", "VAR3", "VAR7"])
+    expect(myVarReg.listVariables("env1", "from-env")).toEqual(["VAR4"])
+    expect(myVarReg.listVariables("env1", "async-res")).toEqual(["VAR6"])
+    expect(myVarReg.listVariables("env2", "from-secrets")).toEqual(["VAR4"])
+    expect(myVarReg.listVariables("env2", "hardcoded")).toEqual(["VAR2", "VAR3"])
+    expect(myVarReg.listVariables("env2", "async-res")).toEqual(["VAR7"])
 
     it("should work for a single-env dynamic resolver (env1)", async () => {
       const res = myVarReg.createDynamicResolver({

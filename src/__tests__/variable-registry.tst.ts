@@ -318,5 +318,40 @@ describe("variable registry", () => {
           .for("env1", "hardcoded", "value1")),
     ).type.toRaiseError("Argument of type 'string' is not assignable to parameter of type 'Uppercase<string>'.")
   })
+
+  describe("listVariables", () => {
+    it("should restrict the arguments correctly", () => {
+      const varReg = envReg.createVariableRegistry()
+        .addVar("VAR1", (v) => v
+          .for("env1", "hardcoded", "value1"))
+        .addVar("VAR2", (v) => v
+          .for("env2", "hardcoded", "value2"))
+      // Correct env1 usage
+      expect(varReg.listVariables("env1", "hardcoded")).type.toBe<Uppercase<string>[]>()
+      expect(varReg.listVariables("env1", "async-res")).type.toBe<Uppercase<string>[]>()
+      expect(varReg.listVariables("env1", "from-env")).type.toBe<Uppercase<string>[]>()
+      // Correct env2 usage
+      expect(varReg.listVariables("env2", "hardcoded")).type.toBe<Uppercase<string>[]>()
+      expect(varReg.listVariables("env2", "from-secrets")).type.toBe<Uppercase<string>[]>()
+      // Incorrect env1 usage
+      expect(varReg.listVariables("env1", "from-secrets")).type.toRaiseError(
+        /Argument of type '"from-secrets"' is not assignable to parameter of type '(.*)'./,
+      )
+      expect(varReg.listVariables("env1", "myDynamicVar")).type.toRaiseError(
+        /Argument of type '"myDynamicVar"' is not assignable to parameter of type '(.*)'./,
+      )
+      // Incorrect env2 usage
+      expect(varReg.listVariables("env2", "from-env")).type.toRaiseError(
+        /Argument of type '"from-env"' is not assignable to parameter of type '(.*)'./,
+      )
+      expect(varReg.listVariables("env2", "async-res")).type.toRaiseError(
+        /Argument of type '"async-res"' is not assignable to parameter of type '(.*)'./,
+      )
+      // Incorrect env3 usage
+      expect(varReg.listVariables("env3", "hardcoded")).type.toRaiseError(
+        /Argument of type '"env3"' is not assignable to parameter of type '(.*)'./,
+      )
+    })
+  })
 })
 

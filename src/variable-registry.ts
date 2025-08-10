@@ -275,4 +275,39 @@ export class VariableRegistry<
       Object.keys(definitions) as t.GetEnvName<EnvReg>[],
     )
   }
+
+  /**
+   * Lists all variables that use a specific resolution tag in a given environment.
+   *
+   * This method filters variables based on their environment-specific resolution
+   * definitions and returns the names of variables that use the specified tag
+   * in their user-defined resolutions.
+   *
+   * @template EnvName - The environment name to filter variables for
+   * @template Tag - The resolution tag to filter by
+   * @param envName - The name of the environment to check
+   * @param tag - The resolution tag to look for
+   * @returns An array of variable names that use the specified tag in the given environment
+   *
+   * @example
+   * ```typescript
+   * // Get all variables that use "from-env" resolution in local environment
+   * const envVars = varReg.listVariables("local", "from-env")
+   * // ["DATABASE_URL", "API_KEY", ...]
+   * ```
+   */
+  public listVariables<
+    EnvName extends t.GetEnvName<EnvReg>,
+    Tag extends t.GetTag<EnvReg, EnvName>,
+  >(
+    envName: EnvName,
+    tag: Tag,
+  ) {
+    return this.variables
+      .filter((v) => v.definitions.some((d) =>
+        d.envName === envName &&
+        d.type.type === "user-defined" &&
+        d.type.tag === tag))
+      .map((v) => v.name)
+  }
 }
