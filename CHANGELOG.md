@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/QuentinJanuel/envoyage/compare/v1.3.0...v1.4.0) (2025-08-10)
+
+
+### Features
+
+* add listVariables method for environment variable validation ([978ec81](https://github.com/QuentinJanuel/envoyage/commit/978ec81a6172654545b2c37d27b6b45d1a6e1b36))
+
 # [1.3.0](https://github.com/QuentinJanuel/envoyage/compare/v1.2.0...v1.3.0) (2025-08-10)
 
 
