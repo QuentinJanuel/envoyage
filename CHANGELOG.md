@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/QuentinJanuel/envoyage/compare/v1.1.0...v1.2.0) (2025-08-10)
+
+
+### Features
+
+* implement getAllFor method in Resolver to retrieve variable values by resolution tag across environments ([fa04881](https://github.com/QuentinJanuel/envoyage/commit/fa04881e6a482002a48f294a5751980174592f15))
+
 # [1.1.0](https://github.com/QuentinJanuel/envoyage/compare/v1.0.0...v1.1.0) (2025-08-09)
 
 
