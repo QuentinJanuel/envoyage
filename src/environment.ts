@@ -1,8 +1,7 @@
-import type { AsyncStatus } from "./async.js"
-import { Resolution, type Resolve } from "./resolution.js"
-import type { TypeDef } from "./type-def.js"
-import { defineType } from "./type-def.js"
-import type { RemoveLiteral } from "./utils.js"
+import type * as a from "./async.js"
+import * as res from "./resolution.js"
+import * as td from "./type-def.js"
+import type * as u from "./utils.js"
 
 /**
  * Represents an environment with its name, data structure, and resolution methods.
@@ -18,12 +17,12 @@ export class Environment<
   Name extends string = string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Data = any,
-  R extends Resolution<string, Data> = Resolution<string, Data>,
+  R extends res.Resolution<string, Data> = res.Resolution<string, Data>,
 > {
   /**
    * Type definition for the environment data structure.
    */
-  public dataType = defineType<Data>()
+  public dataType = td.defineType<Data>()
 
   /**
    * Creates a new Environment instance.
@@ -72,13 +71,13 @@ export class Environment<
     Tag extends string,
     Payload,
   >(
-    tag: RemoveLiteral<Tag, R["tag"]>,
-    _payloadType: TypeDef<Payload>,
-    resolve: Resolve<Data, Payload, "sync">,
+    tag: u.RemoveLiteral<Tag, R["tag"]>,
+    _payloadType: td.TypeDef<Payload>,
+    resolve: res.Resolve<Data, Payload, "sync">,
   ): Environment<
     Name,
     Data,
-    R | Resolution<Tag, Data, Payload, "sync">
+    R | res.Resolution<Tag, Data, Payload, "sync">
   >
   /**
    * Adds an asynchronous resolution method to the environment.
@@ -104,30 +103,30 @@ export class Environment<
     Payload,
   >(
     tag: Tag,
-    _payloadType: TypeDef<Payload>,
-    resolve: Resolve<Data, Payload, "async">,
+    _payloadType: td.TypeDef<Payload>,
+    resolve: res.Resolve<Data, Payload, "async">,
   ): Environment<
     Name,
     Data,
-    R | Resolution<Tag, Data, Payload, "async">
+    R | res.Resolution<Tag, Data, Payload, "async">
   >
   public addResolution<
     Tag extends string,
     Payload,
   >(
     tag: Tag,
-    _payloadType: TypeDef<Payload>,
-    resolve: Resolve<Data, Payload, AsyncStatus>,
+    _payloadType: td.TypeDef<Payload>,
+    resolve: res.Resolve<Data, Payload, a.AsyncStatus>,
   ) {
     return new Environment<
       Name,
       Data,
-      R | Resolution<Tag, Data, Payload, AsyncStatus>
+      R | res.Resolution<Tag, Data, Payload, a.AsyncStatus>
     >(
       this.name,
       [
         ...this.resolutions,
-        Resolution.create<Tag, Data, Payload>(tag, resolve),
+        res.Resolution.create<Tag, Data, Payload>(tag, resolve),
       ],
     )
   }

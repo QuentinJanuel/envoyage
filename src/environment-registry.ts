@@ -1,8 +1,8 @@
-import { Environment } from "./environment.js"
-import { VariableRegistry } from "./variable-registry.js"
-import type { Resolution } from "./resolution.js"
-import type { TypeDef } from "./type-def.js"
-import type { RemoveLiteral } from "./utils.js"
+import * as e from "./environment.js"
+import type * as res from "./resolution.js"
+import type * as td from "./type-def.js"
+import type * as u from "./utils.js"
+import * as v from "./variable-registry.js"
 
 /**
  * Registry for managing multiple environments with their resolutions.
@@ -23,7 +23,7 @@ import type { RemoveLiteral } from "./utils.js"
  * ```
  */
 export class EnvironmentRegistry<
-  Env extends Environment = Environment,
+  Env extends e.Environment = e.Environment,
 > {
   /**
    * Creates a new EnvironmentRegistry instance.
@@ -62,17 +62,17 @@ export class EnvironmentRegistry<
   public addEnv<
     EnvName extends string,
     EnvData,
-    R extends Resolution<string, EnvData>,
+    R extends res.Resolution<string, EnvData>,
   >(
-    envName: RemoveLiteral<EnvName, Env["name"]>,
-    _envDataType: TypeDef<EnvData>,
+    envName: u.RemoveLiteral<EnvName, Env["name"]>,
+    _envDataType: td.TypeDef<EnvData>,
     f: (
-      env: Environment<EnvName, EnvData, never>
-    ) => Environment<EnvName, EnvData, R>,
+      env: e.Environment<EnvName, EnvData, never>
+    ) => e.Environment<EnvName, EnvData, R>,
   ) {
-    return new EnvironmentRegistry<Env | Environment<EnvName, EnvData, R>>([
+    return new EnvironmentRegistry<Env | e.Environment<EnvName, EnvData, R>>([
       ...this.environments,
-      f(Environment.create<EnvName, EnvData>(envName)),
+      f(e.Environment.create<EnvName, EnvData>(envName)),
     ])
   }
 
@@ -108,7 +108,7 @@ export class EnvironmentRegistry<
    * ```
    */
   public createVariableRegistry() {
-    return VariableRegistry.create(this)
+    return v.VariableRegistry.create(this)
   }
 }
 

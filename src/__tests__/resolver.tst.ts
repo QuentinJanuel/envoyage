@@ -371,6 +371,10 @@ describe("Resolver", () => {
         .addVar("VAR", (v) => v
           .for("env1", "hardcoded", "value1")
           .for("env2", "hardcoded", "value2"))
+        .addVar("VAR2", (v) => v
+          .for("env1", "hardcoded", "value1"))
+        .addVar("VAR3", (v) => v
+          .for("env2", "hardcoded", "value2"))
 
       const res1 = varReg.createResolver("env1", { env: {} })
       const res2 = varReg.createResolver("env2", { secrets: {} })
@@ -430,6 +434,575 @@ describe("Resolver", () => {
           VAR5: string
         }
       >()
+    })
+  })
+
+  describe("getAllFor", () => {
+    describe("validation", () => {
+      it("should not allow getting variables from the same environment", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env1", "hardcoded")).type.toRaiseError(
+          "Argument of type '\"env1\"' is not assignable to parameter of type '\"env2\"'.",
+        )
+      })
+
+      it("should not allow using resolution tags from wrong environment", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "from-env")).type.toRaiseError(
+          "Argument of type '\"from-env\"' is not assignable to parameter of type '\"hardcoded\" | \"async-res\" | \"from-secrets\"'",
+        )
+      })
+
+      it("should require all variables to be defined in current environment", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env2", "hardcoded", "value4"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toRaiseError(
+          "Expected 3 arguments, but got 2.",
+        )
+      })
+    })
+
+    describe("sync resolution", () => {
+      it("should return variables that use the specified tag in target environment", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{
+          VAR1: string
+        }>()
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        expect(res.getAllFor("env2", "from-secrets")).type.toBe<{}>()
+      })
+
+      it("should return multiple variables with the same tag", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value3")
+            .for("env2", "hardcoded", "value4"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{
+          VAR1: string
+          VAR2: string
+        }>()
+      })
+
+      it("should only return variables defined in both environments", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value3"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{
+          VAR1: string
+        }>()
+      })
+
+      it("should handle different resolution types correctly", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value4")
+            .for("env2", "from-secrets"))
+          .addVar("VAR3", (v) => v
+            .for("env1", "hardcoded", "value5")
+            .for("env2", "async-res"))
+          .addVar("VAR4", (v) => v
+            .for("env1", "hardcoded", "value6")
+            .dynamicFor("env2", "myDynamicVar"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{
+          VAR1: string
+        }>()
+
+        expect(res.getAllFor("env2", "from-secrets")).type.toBe<{
+          VAR2: string
+        }>()
+
+        expect(res.getAllFor("env2", "async-res")).type.toBe<{
+          VAR3: string
+        }>()
+      })
+    })
+
+    describe("async resolution", () => {
+      it("should return Promise when variable has async resolution in current env", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2"))
+
+        const res1 = varReg.createResolver("env1", { env: {} })
+        const res2 = varReg.createResolver("env2", { secrets: {} })
+
+        expect(res1.getAllFor("env2", "hardcoded")).type.toBe<Promise<{
+          VAR1: string
+        }>>()
+
+        expect(res2.getAllFor("env1", "async-res")).type.toBe<{
+          VAR1: string
+        }>()
+      })
+
+      it("should return Promise when any variable has async resolution in current env", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR3", (v) => v
+            .for("env1", "hardcoded", "value3")
+            .for("env2", "from-secrets"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<Promise<{
+          VAR1: string
+          VAR2: string
+        }>>()
+
+        expect(res.getAllFor("env2", "from-secrets")).type.toBe<{
+          VAR3: string
+        }>()
+      })
+
+      it("should return Promise when multiple variables have async resolution in current env", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<Promise<{
+          VAR1: string
+          VAR2: string
+        }>>()
+      })
+    })
+
+    describe("with dynamic resolvers", () => {
+      const dynamicEnvReg = createEnvironmentRegistry()
+        .addEnv("env1", defineType<{ env1Data: Record<string, string> }>(), (env) => env
+          .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+          .addResolution("from-env1", defineType<undefined>(), (data) =>
+            data.envData.env1Data[data.variableName])
+          .addResolution("async-res", defineType<undefined>(), () => Promise.resolve("async-value")))
+        .addEnv("env2", defineType<{ env2Data: Record<string, string> }>(), (env) => env
+          .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+          .addResolution("from-env2", defineType<undefined>(), (data) =>
+            data.envData.env2Data[data.variableName])
+          .addResolution("async-res", defineType<undefined>(), () => Promise.resolve("async-value")))
+        .addEnv("env3", defineType<{ env3Data: Record<string, string> }>(), (env) => env
+          .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+          .addResolution("from-env3", defineType<undefined>(), (data) =>
+            data.envData.env3Data[data.variableName])
+          .addResolution("async-res", defineType<undefined>(), () => Promise.resolve("async-value")))
+        .addEnv("env4", defineType<{ env4Data: Record<string, string> }>(), (env) => env
+          .addResolution("hardcoded", defineType<string>(), (data) => data.payload)
+          .addResolution("from-env4", defineType<undefined>(), (data) =>
+            data.envData.env4Data[data.variableName])
+          .addResolution("async-res", defineType<undefined>(), () => Promise.resolve("async-value")))
+
+      it("should not allow getting variables from possible environments", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        expect(res.getAllFor("env1", "hardcoded")).type.toRaiseError(
+          /Argument of type '"env1"' is not assignable to parameter of type '(.*)'./,
+        )
+        expect(res.getAllFor("env2", "hardcoded")).type.toRaiseError(
+          /Argument of type '"env2"' is not assignable to parameter of type '(.*)'./,
+        )
+      })
+
+      describe("variable accessibility", () => {
+        it("should only allow variables present in all possible environments", () => {
+          const varReg = dynamicEnvReg.createVariableRegistry()
+            // Present in all envs with same resolution type - should be allowed
+            .addVar("COMMON_SAME_RES", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+            // Present in all envs but different resolution types - should still be allowed
+            .addVar("COMMON_DIFF_RES", (v) => v
+              .for("env1", "from-env1")
+              .for("env2", "from-env2")
+              .for("env3", "hardcoded", "value3"))
+            // Missing in env1 - should not be allowed
+            .addVar("MISSING_ENV1", (v) => v
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+            // Missing in env2 - should not be allowed
+            .addVar("MISSING_ENV2", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env3", "hardcoded", "value3"))
+            // Present in all envs but not in target - should not be allowed
+            .addVar("NOT_IN_ENV3", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2"))
+
+          const res = varReg.createDynamicResolver({
+            env1: [{ env1Data: {} }],
+            env2: [{ env2Data: {} }],
+          }, () => "env1")
+
+          // Should fail because some variables with "hardcoded" resolution in env3
+          // (like MISSING_ENV1) are not defined in all possible environments
+          // (MISSING_ENV1 is missing from env1), so we can't guarantee they
+          // would be resolvable at runtime
+          expect(res.getAllFor("env3", "hardcoded")).type.toRaiseError(
+            "Expected 3 arguments, but got 2.",
+          )
+        })
+
+        it("should return Promise if any possible environment has async resolution", () => {
+          const varReg = dynamicEnvReg.createVariableRegistry()
+            // Async in env1, sync in env2
+            .addVar("VAR1", (v) => v
+              .for("env1", "async-res")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+            // Sync in env1, async in env2
+            .addVar("VAR2", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "async-res")
+              .for("env3", "hardcoded", "value3"))
+            // Sync in both env1 and env2
+            .addVar("VAR3", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+
+          const res = varReg.createDynamicResolver({
+            env1: [{ env1Data: {} }],
+            env2: [{ env2Data: {} }],
+          }, () => "env1")
+
+          // Should be Promise since VAR1 and VAR2 have async resolution in possible environments
+          expect(res.getAllFor("env3", "hardcoded")).type.toBe<Promise<{
+            VAR1: string
+            VAR2: string
+            VAR3: string
+          }>>()
+        })
+
+        it("should allow accessing env3 variables when some unrelated variables have different resolutions", () => {
+          const varReg = dynamicEnvReg.createVariableRegistry()
+            .addVar("DIFF_RES", (v) => v
+              .for("env1", "from-env1")
+              .for("env2", "from-env2")
+              .for("env3", "hardcoded", "value3"))
+            .addVar("COMMON_RES", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+            .addVar("VAR3", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "from-env3"))
+            .addVar("VAR4", (v) => v
+              .for("env1", "async-res")
+              .for("env2", "hardcoded", "value2")
+              .for("env4", "hardcoded", "value4"))
+
+          const res = varReg.createDynamicResolver({
+            env1: [{ env1Data: {} }],
+            env2: [{ env2Data: {} }],
+          }, () => "env1")
+
+          expect(res.getAllFor("env3", "hardcoded")).type.toBe<{
+            COMMON_RES: string
+            DIFF_RES: string
+          }>()
+          expect(res.getAllFor("env3", "from-env3")).type.toBe<{
+            VAR3: string
+          }>()
+          expect(res.getAllFor("env4", "hardcoded")).type.toBe<Promise<{
+            VAR4: string
+          }>>()
+        })
+
+        it("should allow variables with different resolution types in possible environments", () => {
+          const varReg = dynamicEnvReg.createVariableRegistry()
+            // Different resolution types in possible environments
+            .addVar("MIXED_RES", (v) => v
+              .for("env1", "from-env1")
+              .for("env2", "from-env2")
+              .for("env3", "hardcoded", "value3"))
+            // Same resolution type in possible environments
+            .addVar("SAME_RES", (v) => v
+              .for("env1", "hardcoded", "value1")
+              .for("env2", "hardcoded", "value2")
+              .for("env3", "hardcoded", "value3"))
+
+          const res = varReg.createDynamicResolver({
+            env1: [{ env1Data: {} }],
+            env2: [{ env2Data: {} }],
+          }, () => "env1")
+
+          // Both SAME_RES and MIXED_RES should be accessible
+          expect(res.getAllFor("env3", "hardcoded")).type.toBe<{
+            SAME_RES: string
+            MIXED_RES: string
+          }>()
+        })
+      })
+
+      it("should handle async resolution in any possible environment", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "async-res")
+            .for("env3", "hardcoded", "value3"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        // Should be Promise since variables have async resolution in possible environments
+        expect(res.getAllFor("env3", "hardcoded")).type.toBe<Promise<{
+          VAR1: string
+          VAR2: string
+        }>>()
+      })
+
+      it("should handle different resolution types in target environment", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "from-env3"))
+          .addVar("VAR3", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "async-res"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        expect(res.getAllFor("env3", "hardcoded")).type.toBe<{
+          VAR1: string
+        }>()
+
+        expect(res.getAllFor("env3", "from-env3")).type.toBe<{
+          VAR2: string
+        }>()
+
+        expect(res.getAllFor("env3", "async-res")).type.toBe<{
+          VAR3: string
+        }>()
+      })
+
+      it("should handle union of dynamic resolvers", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+
+        const res1 = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        const res2 = varReg.createDynamicResolver({
+          env2: [{ env2Data: {} }],
+          env3: [{ env3Data: {} }],
+        }, () => "env2")
+
+        const res = (0 as unknown as boolean) ? res1 : res2
+
+        expect(res.getAllFor("env3", "hardcoded")).type.toRaiseError(
+          "This expression is not callable.",
+        )
+      })
+
+      it("should handle dynamic variables in target environment", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .dynamicFor("env3", "myDynamicVar"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        // Dynamic variables should be excluded from getAllFor results
+        expect(res.getAllFor("env3", "hardcoded")).type.toBe<{
+          VAR2: string
+        }>()
+      })
+
+      it("should fail when target variable is not present in all possible environments", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .dynamicFor("env3", "myDynamicVar"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env3", "hardcoded", "value3"))
+          .addVar("VAR3", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        // Should fail because VAR2 is required for env3 hardcoded
+        // but VAR2 is not present in env2 (only in env1)
+        // and res is dynamic over env1 and env2
+        // so it's not possible to resolve VAR2 for env3 hardcoded
+        expect(res.getAllFor("env3", "hardcoded")).type.toRaiseError()
+      })
+
+      it("should return Promise when any variable has async resolution in current env for target env", () => {
+        const varReg = dynamicEnvReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .dynamicFor("env3", "myDynamicVar"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+          .addVar("VAR3", (v) => v
+            .for("env1", "async-res")
+            .for("env2", "hardcoded", "value2")
+            .for("env3", "hardcoded", "value3"))
+
+        const res = varReg.createDynamicResolver({
+          env1: [{ env1Data: {} }],
+          env2: [{ env2Data: {} }],
+        }, () => "env1")
+
+        expect(res.getAllFor("env3", "hardcoded")).type.toBe<Promise<{
+          VAR2: string
+          VAR3: string
+        }>>()
+
+        // Should not be a promise because
+        // there is no async resolution in env1 or env2 for
+        // env3 variables with from-env3 resolution
+        // since there is no such variable at all
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        expect(res.getAllFor("env3", "from-env3")).type.toBe<{}>()
+        // should be the same for "env3" and "async-res"
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        expect(res.getAllFor("env3", "async-res")).type.toBe<{}>()
+        // or for env4
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        expect(res.getAllFor("env4", "hardcoded")).type.toBe<{}>()
+      })
+    })
+
+    describe("edge cases", () => {
+      it("should handle dynamic variables in target environment", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .dynamicFor("env2", "myDynamicVar"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value2")
+            .for("env2", "hardcoded", "value3"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        // Dynamic variables should be excluded from getAllFor results
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{
+          VAR2: string
+        }>()
+      })
+
+      it("should handle empty results correctly", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "from-secrets"))
+          .addVar("VAR2", (v) => v
+            .for("env1", "hardcoded", "value2")
+            .for("env2", "async-res"))
+
+        const res = varReg.createResolver("env1", { env: {} })
+        // No variables use hardcoded in env2
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        expect(res.getAllFor("env2", "hardcoded")).type.toBe<{}>()
+      })
+
+      it("should not work with union of resolvers", () => {
+        const varReg = envReg.createVariableRegistry()
+          .addVar("VAR1", (v) => v
+            .for("env1", "hardcoded", "value1")
+            .for("env2", "hardcoded", "value2"))
+
+        const res1 = varReg.createResolver("env1", { env: {} })
+        const res2 = varReg.createResolver("env2", { secrets: {} })
+        const res = (0 as unknown as boolean) ? res1 : res2
+
+        expect(res.getAllFor("env2", "hardcoded")).type.toRaiseError(
+          "This expression is not callable.",
+        )
+      })
     })
   })
 })
