@@ -190,6 +190,24 @@ const globalVarReg = envReg.createVariableRegistry()
   .addVar("APP_VERSION", (v) => v.for("local", "hardcoded", "1.0.0"))
 ```
 
+### Variable Source Validation
+
+The `listVariables` method enables writing validation scripts to ensure all required environment variables are properly configured:
+
+```typescript
+// Get all variables that should be in your .env file
+const envVars = varReg.listVariables("local", "from-env")
+
+// Example validation script
+const validateEnvFile = function () {
+  const missingVars = envVars.filter(name => !process.env[name])
+  if (missingVars.length > 0)
+    throw new Error(
+      `Missing required environment variables in .env: ${missingVars.join(", ")}`
+    )
+}
+```
+
 ### Dynamic Environment Selection
 
 For runtime environment selection while maintaining type safety:
