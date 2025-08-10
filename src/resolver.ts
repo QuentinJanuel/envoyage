@@ -1,5 +1,6 @@
 import type * as a from "./async.js"
 import type * as er from "./environment-registry.js"
+import { Redacted } from "./redacted.js"
 import * as td from "./type-def.js"
 import type * as t from "./types.js"
 import type * as u from "./utils.js"
@@ -85,6 +86,8 @@ export class Resolver<
 
   /** Cache: variable name → true if any possible env resolves asynchronously */
   private variableAsyncMap: Record<string, boolean> = {}
+  private envData: Redacted<t.GetEnvData<EnvReg, EnvName>>
+  private dynamicData: Redacted<t.GetDynamicData<EnvReg, EnvName, Var>>
 
   /**
    * Creates a new Resolver instance.
@@ -100,10 +103,13 @@ export class Resolver<
     private environmentRegistry: EnvReg,
     private variables: v.Variable<er.EnvironmentRegistry>[],
     private envName: EnvName,
-    private envData: t.GetEnvData<EnvReg, EnvName>,
-    private dynamicData: t.GetDynamicData<EnvReg, EnvName, Var>,
+    envData: t.GetEnvData<EnvReg, EnvName>,
+    dynamicData: t.GetDynamicData<EnvReg, EnvName, Var>,
     private possibleEnvNames: t.GetEnvName<EnvReg>[],
-  ) {}
+  ) {
+    this.envData = new Redacted(envData)
+    this.dynamicData = new Redacted(dynamicData)
+  }
 
   /**
    * Gets the value of a variable for the current environment.
@@ -160,7 +166,7 @@ export class Resolver<
       throw new Error(`No definition found for variable ${name} in ${this.envName}`)
     const getValue = () => {
       if (def.type.type === "dynamic")
-        return (this.dynamicData as Record<string, string>)?.[def.type.dynamicName]
+        return (this.dynamicData.getValue() as Record<string, string>)?.[def.type.dynamicName]
       // user-defined
       const tag = def.type.tag
       const res = this.environmentRegistry
@@ -171,7 +177,7 @@ export class Resolver<
       return res.resolve({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         payload: def.type.payload,
-        envData: this.envData,
+        envData: this.envData.getValue(),
         variableName: name,
       })
     }

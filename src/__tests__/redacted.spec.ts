@@ -5,16 +5,16 @@ describe("Redacted", () => {
   describe("create", () => {
     it("should create a redacted value", () => {
       const value = "secret"
-      const redacted = Redacted.create(value)
+      const redacted = new Redacted(value)
       expect(redacted).toBeInstanceOf(Redacted)
       expect(redacted.getValue()).toBe(value)
     })
 
     it("should work with different types", () => {
-      const stringValue = Redacted.create("secret")
-      const numberValue = Redacted.create(42)
-      const objectValue = Redacted.create({ key: "value" })
-      const arrayValue = Redacted.create([1, 2, 3])
+      const stringValue = new Redacted("secret")
+      const numberValue = new Redacted(42)
+      const objectValue = new Redacted({ key: "value" })
+      const arrayValue = new Redacted([1, 2, 3])
 
       expect(stringValue.getValue()).toBe("secret")
       expect(numberValue.getValue()).toBe(42)
@@ -26,14 +26,14 @@ describe("Redacted", () => {
   describe("getValue", () => {
     it("should return the original value", () => {
       const value = { sensitive: "data" }
-      const redacted = Redacted.create(value)
+      const redacted = new Redacted(value)
       expect(redacted.getValue()).toBe(value)
     })
   })
 
   describe("toString", () => {
     it("should return redacted string", () => {
-      const redacted = Redacted.create("secret")
+      const redacted = new Redacted("secret")
       expect(redacted.toString()).toBe("<redacted>")
       expect(String(redacted)).toBe("<redacted>")
     })
@@ -41,7 +41,7 @@ describe("Redacted", () => {
 
   describe("toJSON", () => {
     it("should return redacted string", () => {
-      const redacted = Redacted.create("secret")
+      const redacted = new Redacted("secret")
       expect(redacted.toJSON()).toBe("<redacted>")
       expect(JSON.stringify(redacted)).toBe('"<redacted>"')
     })
@@ -49,9 +49,9 @@ describe("Redacted", () => {
     it("should redact when nested in objects", () => {
       const obj = {
         visible: "public",
-        hidden: Redacted.create("secret"),
+        hidden: new Redacted("secret"),
         nested: {
-          alsoHidden: Redacted.create(123),
+          alsoHidden: new Redacted(123),
         },
       }
       expect(JSON.stringify(obj)).toBe(
@@ -62,7 +62,7 @@ describe("Redacted", () => {
 
   describe("inspect", () => {
     it("should return redacted string when using util.inspect", () => {
-      const redacted = Redacted.create("secret")
+      const redacted = new Redacted("secret")
       const inspectResult = (redacted as unknown as { [key: symbol]: () => string })[Symbol.for("nodejs.util.inspect.custom")]()
       expect(inspectResult).toBe("<redacted>")
     })

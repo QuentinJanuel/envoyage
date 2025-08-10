@@ -8,11 +8,7 @@
  * @internal
  */
 export class Redacted<T> {
-  private constructor(private readonly value: T) {}
-
-  public static create<T>(value: T) {
-    return new Redacted(value)
-  }
+  public constructor(private readonly value: T) {}
 
   /**
    * Extract the internal value.
