@@ -2,7 +2,7 @@ import Layout from '@theme/Layout';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 export default function ApiPage() {
-  const typedocUrl = useBaseUrl('/typedoc/');
+  const typedocUrl = useBaseUrl('/typedoc/index.html');
   return (
     <Layout title="API Reference">
       <iframe

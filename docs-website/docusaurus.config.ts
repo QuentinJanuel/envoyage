@@ -49,7 +49,7 @@ const config: Config = {
     ],
   ],
 
-  plugins: [["@docusaurus/plugin-client-redirects", { redirects: [{ from: "/typedoc", to: "/typedoc/" }] }]],
+  plugins: [],
 
   themeConfig: {
     image: "img/logo.png",
