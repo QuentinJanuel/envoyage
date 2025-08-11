@@ -15,7 +15,10 @@
     "lint": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs",
     "lint:fix": "eslint '**/*.{js,ts,vue}' -c eslint.config.mjs --fix",
     "start": "tsc && node dist/index.js",
-    "docs": "typedoc index.ts",
+    "docs:api": "typedoc",
+    "docs:prepare": "npm run docs:api && rm -rf docs-website/static && mkdir -p docs-website/static/img && cp -R docs/api docs-website/static/typedoc && cp docs/logo.png docs-website/static/img/logo.png",
+    "docs:start": "npm run docs:prepare && npm --prefix docs-website start",
+    "docs:build": "npm run docs:prepare && npm --prefix docs-website run build",
     "release:dry": "semantic-release --dry-run"
   },
   "repository": {
