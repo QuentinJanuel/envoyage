@@ -10,8 +10,13 @@
     "strict": true,
     "target": "ESNext"
   },
+  "include": [
+    "src/**/*",
+    "index.ts"
+  ],
   "exclude": [
     "src/__tests__/**/*",
-    "dist/**/*"
+    "dist/**/*",
+    "docs-website/**/*"
   ]
 }

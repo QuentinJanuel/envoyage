@@ -200,7 +200,11 @@ export default [
   {
     languageOptions: {
       parserOptions: {
-        project: ["./tsconfig.json", "./src/__tests__/tsconfig.json"],
+        project: [
+          "./tsconfig.json",
+          "./src/__tests__/tsconfig.json",
+          "./docs-website/tsconfig.json",
+        ],
       },
     },
   },
