@@ -1,33 +1,34 @@
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs"
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
-
-/**
- * Creating a sidebar enables you to:
- - create an ordered group of docs
- - render a sidebar for each doc of that group
- - provide next/previous navigation
-
- The sidebars can be generated from the filesystem, or explicitly defined here.
-
- Create as many sidebars as you want.
- */
 const sidebars: SidebarsConfig = {
-  // By default, Docusaurus generates a sidebar from the docs folder structure
-  tutorialSidebar: [{ type: "doc", id: "intro" }],
-
-  // But you can create a sidebar manually
-  /*
   tutorialSidebar: [
-    'intro',
-    'hello',
+    { type: "doc", id: "intro" },
     {
-      type: 'category',
-      label: 'Tutorial',
-      items: ['tutorial-basics/create-a-document'],
+      type: "category",
+      label: "Core Concepts",
+      items: [
+        { type: "doc", id: "core-concepts/environment-registry" },
+        { type: "doc", id: "core-concepts/variable-registry" },
+        { type: "doc", id: "core-concepts/resolver" },
+        { type: "doc", id: "core-concepts/define-type" },
+      ],
+    },
+    {
+      type: "category",
+      label: "Advanced Usage",
+      items: [
+        { type: "doc", id: "advanced-usage/dynamic-variable" },
+        { type: "doc", id: "advanced-usage/dynamic-resolver" },
+      ],
+    },
+    {
+      type: "category",
+      label: "Useful Patterns",
+      items: [
+        { type: "doc", id: "useful-pattern/dotenv-example" },
+      ],
     },
   ],
-   */
 }
 
 export default sidebars
