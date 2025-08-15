@@ -27,6 +27,7 @@ const sidebars: SidebarsConfig = {
       items: [
         { type: "doc", id: "useful-pattern/dotenv-example" },
         { type: "doc", id: "useful-pattern/validate-dotenv" },
+        { type: "doc", id: "useful-pattern/single-environment" },
       ],
     },
   ],
