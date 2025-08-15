@@ -8,6 +8,8 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(45deg, #2b5876, #4e4376);
+  color: white;
 }
 
 @media screen and (max-width: 996px) {
@@ -20,4 +22,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+}
+
+.features {
+  display: flex;
+  align-items: stretch;
+  padding: 4rem 0;
+  width: 100%;
+  background-color: var(--ifm-color-emphasis-100);
+}
+
+.feature {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.feature h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.demoSection {
+  padding: 4rem 0;
+  background-color: var(--ifm-background-color);
+}
+
+.demoTitle {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.demoCode {
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
