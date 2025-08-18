@@ -9,8 +9,8 @@ const config: Config = {
 
   future: { v4: true },
 
-  url: "https://your-docusaurus-site.example.com",
-  baseUrl: "/",
+  url: "https://quentinjanuel.github.io",
+  baseUrl: "/envoyage/",
 
   organizationName: "QuentinJanuel",
   projectName: "envoyage",
