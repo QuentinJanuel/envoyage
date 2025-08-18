@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/QuentinJanuel/envoyage/compare/v1.4.1...v1.5.0) (2025-08-18)
+
+
+### Features
+
+* documentation deployment ([91e9b3d](https://github.com/QuentinJanuel/envoyage/commit/91e9b3d06e244d7bc65297f10def5d6a97a48695))
+
 ## [1.4.1](https://github.com/QuentinJanuel/envoyage/compare/v1.4.0...v1.4.1) (2025-08-18)
 
 
