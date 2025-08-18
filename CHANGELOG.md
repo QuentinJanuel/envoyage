@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/QuentinJanuel/envoyage/compare/v1.4.0...v1.4.1) (2025-08-18)
+
+
+### Bug Fixes
+
+* optimize npm package configuration ([c75804d](https://github.com/QuentinJanuel/envoyage/commit/c75804d7961421a4af1d6a8d1dcfc4dfc84afeea))
+
 # [1.4.0](https://github.com/QuentinJanuel/envoyage/compare/v1.3.0...v1.4.0) (2025-08-10)
 
 
