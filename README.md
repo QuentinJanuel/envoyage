@@ -14,6 +14,12 @@ A zero-dependency, type-safe environment variable management library for TypeScr
 
 **envoyage is completely agnostic about how your variables are loaded**, it solely provides a safe way to declare your environment structure based on your specific requirements.
 
+## 📖 Documentation
+
+**[📚 View Full Documentation →](https://quentinjanuel.github.io/envoyage)**
+
+Complete guides, API reference, and examples are available in our documentation site.
+
 ## Features
 
 - **Type-Safe Environment Management**: Define environments with their data structures and resolution methods with full TypeScript support
