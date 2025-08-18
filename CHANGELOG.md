@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/QuentinJanuel/envoyage/compare/v1.5.0...v1.6.0) (2025-08-18)
+
+
+### Features
+
+* update homepage URL in package.json and add documentation link in README ([0ad3b7f](https://github.com/QuentinJanuel/envoyage/commit/0ad3b7ff6f876751e72b76489df2d26d3e5c5f7c))
+
 # [1.5.0](https://github.com/QuentinJanuel/envoyage/compare/v1.4.1...v1.5.0) (2025-08-18)
 
 

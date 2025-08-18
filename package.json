@@ -2,7 +2,7 @@
   "name": "envoyage",
   "description": "A zero-dependency, type-safe environment variable management library for TypeScript applications",
   "type": "module",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
