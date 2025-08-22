@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { createEnvironmentRegistry } from "../environment-registry"
-import { defineType } from "../type-def"
+import { createEnvironmentRegistry } from "../environment-registry.js"
+import { defineType } from "../type-def.js"
 
 describe("Environment Registry Integration", () => {
   it("should resolve variables successfully", async () => {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "tstyche"
-import { createEnvironmentRegistry } from "../environment-registry"
+import { createEnvironmentRegistry } from "../environment-registry.js"
 import { defineType } from "../type-def.js"
-import type { VariableRegistry } from "../variable-registry"
-import type { Variable } from "../variable"
-import type { DefinedResolution } from "../resolution"
+import type { VariableRegistry } from "../variable-registry.js"
+import type { Variable } from "../variable.js"
+import type { DefinedResolution } from "../resolution.js"
 
 const envReg = createEnvironmentRegistry()
   .addEnv(

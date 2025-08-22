@@ -1,5 +1,5 @@
 import { describe, it, expect } from "tstyche"
-import type { Extends, HasIntersection, KeepIf, Not, OptionalIf, RemoveLiteral } from "../utils"
+import type { Extends, HasIntersection, KeepIf, Not, OptionalIf, RemoveLiteral } from "../utils.js"
 
 describe("KeepIf", () => {
   it("should return the type if the condition is true", () => {

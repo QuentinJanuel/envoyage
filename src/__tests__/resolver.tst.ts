@@ -1,6 +1,6 @@
 import { describe, expect, it } from "tstyche"
-import { createEnvironmentRegistry } from "../environment-registry"
-import { defineType } from "../type-def"
+import { createEnvironmentRegistry } from "../environment-registry.js"
+import { defineType } from "../type-def.js"
 
 const envReg = createEnvironmentRegistry()
   .addEnv(
