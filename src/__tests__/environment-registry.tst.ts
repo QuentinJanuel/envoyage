@@ -1,9 +1,9 @@
 import { describe, expect, it } from "tstyche"
-import type { EnvironmentRegistry } from "../environment-registry"
-import { createEnvironmentRegistry } from "../environment-registry"
+import type { EnvironmentRegistry } from "../environment-registry.js"
+import { createEnvironmentRegistry } from "../environment-registry.js"
 import { defineType } from "../type-def.js"
-import type { Environment } from "../environment"
-import type { Resolution } from "../resolution"
+import type { Environment } from "../environment.js"
+import type { Resolution } from "../resolution.js"
 
 describe("environment registry", () => {
   it("should define an environment registry with the correct type", () => {

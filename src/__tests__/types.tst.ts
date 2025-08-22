@@ -1,7 +1,7 @@
 import { describe, expect, it } from "tstyche"
-import type { GetCommonVariableForEnv, GetName } from "../types"
-import { createEnvironmentRegistry } from "../environment-registry"
-import { defineType } from "../type-def"
+import type { GetCommonVariableForEnv, GetName } from "../types.js"
+import { createEnvironmentRegistry } from "../environment-registry.js"
+import { defineType } from "../type-def.js"
 
 const envReg = createEnvironmentRegistry()
   .addEnv(

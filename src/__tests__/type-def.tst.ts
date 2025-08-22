@@ -1,6 +1,6 @@
 import { describe, it, expect } from "tstyche"
-import type { TypeDef, Infer } from "../type-def"
-import { defineType } from "../type-def"
+import type { TypeDef, Infer } from "../type-def.js"
+import { defineType } from "../type-def.js"
 
 describe("defineType", () => {
   it("should define a type", () => {
